@@ -1,7 +1,9 @@
-First attempt at running Zalenium on Kubernetes
+#First attempt at running Zalenium on Kubernetes
+
+Create Zalenium deployment and expose via service
 
     kubectl create -f zalenium-deployment.yaml -f zalenium-service.yaml
     
 Request 10 webdrivers in parallel
    
-    mvn clean install    
+    GRID_ADDRES=http://<your_ip:your_port>/wd/hub mvn clean install    
