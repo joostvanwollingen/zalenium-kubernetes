@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zalenium
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zalenium
+        role: grid
+    spec:
+      containers:
+      - name: zalenium
+        image: dosel/zalenium
+        args: ["start","--firefoxContainers","0","--chromeContainers","0"]
+        ports:
+        - containerPort: 4444
+        livenessProbe:
+                  httpGet:
+                    path: /
+                    port: 4444
+                  initialDelaySeconds: 30
+                  timeoutSeconds: 1
