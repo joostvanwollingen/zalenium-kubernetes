@@ -6,4 +6,5 @@ Create Zalenium deployment and expose via service
     
 Request 10 webdrivers in parallel
    
-    GRID_ADDRES=http://<your_ip:your_port>/wd/hub mvn clean install    
+    GRID_ADDRESS=http://<your_ip:your_port>/wd/hub mvn clean install    
+       
