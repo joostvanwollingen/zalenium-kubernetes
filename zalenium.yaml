@@ -1,0 +1,120 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: pro-zalenium-app
+  namespace: zalenium
+  generateName: zalenium
+  labels:
+    app: zalenium
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        bol-environment: "pro"
+        bol-application: "zalenium"
+        bol-role: "zalenium-app"
+        bol-opex: "jvanwollingen"
+        bol-version: "latest"
+        bol-internal: "true"
+        bol-external: "false"
+        bol-pii: "false"
+        app: zalenium
+        role: hub
+    spec:
+     containers:
+     - name: zalenium
+       image: eu.gcr.io/bolcom-pro/zalenium:joost
+       args: ["start","--firefoxContainers","0","--chromeContainers","0"]
+       ports:
+       - containerPort: 4444
+       livenessProbe:
+                 httpGet:
+                   path: /
+                   port: 4444
+                 initialDelaySeconds: 30
+                 timeoutSeconds: 1
+     affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: bol-internal
+                operator: In
+                values:
+                - "true"
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: failure-domain.beta.kubernetes.io/zone
+                operator: In
+                values:
+                - europe-west1-b
+                - europe-west1-c
+                - europe-west1-d
+      # Security policy (depends on security session with Google)
+     serviceAccountName: zalenium
+     serviceAccount: zalenium
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pro-zalenium-app
+  namespace: zalenium
+  labels:
+    bol-environment: "pro"
+    bol-application: "zalenium"
+    bol-role: "zalenium-app"
+    bol-opex: "jvanwollingen"
+    bol-version: "latest"
+    bol-internal: "true"
+    bol-external: "false"
+    bol-pii: "false"
+  annotations:
+    cloud.google.com/load-balancer-type: "internal"
+    external-dns.alpha.kubernetes.io/hostname: zalenium.gcppro.bolcom.net.
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster # with local, the internal loadbalancer doesn't work correctly
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 4444
+  selector:
+    bol-application: "zalenium"
+    bol-role: "zalenium-app"
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "internal"
+    external-dns.alpha.kubernetes.io/hostname: zalenium.bol.io
+  creationTimestamp: null
+  generation: 1
+  labels:
+    stable.k8s.psg.io/kcm.class: default
+  name: zalenium.bol.io
+  namespace: zalenium
+spec:
+  rules:
+  - host: zalenium.bol.io
+    http:
+      paths:
+      - backend:
+          serviceName: pro-zalenium-app
+          servicePort: 4444
+  tls:
+  - hosts:
+    - zalenium.bol.io
+    secretName: tls-zalenium-bol-io
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zalenium
+  namespace: zalenium

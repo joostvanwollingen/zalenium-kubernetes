@@ -12,8 +12,8 @@ spec:
     spec:
       containers:
       - name: zalenium
-        image: dosel/zalenium:3.3.1r
-        args: ["start","--firefoxContainers","0","--chromeContainers","10"]
+        image: dosel/zalenium:3
+        args: ["start","--firefoxContainers","0","--chromeContainers","0","--gridUser","myUser","--gridPassword","myPassword"]
         ports:
         - containerPort: 4444
         livenessProbe:
