@@ -39,7 +39,9 @@ public class TestSimpleGridTest {
 
         capability.setCapability("recordVideo", false);
 
+        System.out.println("Attempting to fetch driver");
         driver = new RemoteWebDriver(getGridUrlFromEnvironment(), capability);
+        System.out.println("Got driver:" + driver.toString());
         driver.get("http://www.test2.bol.com");
     }
 
